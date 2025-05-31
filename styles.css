@@ -1,0 +1,844 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Splash Screen Styles */
+.splash-screen {
+    background-color: #0056b3; /* Bank blue */
+    background-image: url('../images/logo.png');
+    background-repeat: no-repeat;
+    background-position: center 40%;
+    background-size: 300px; /* Adjust based on your logo size */
+    height: 150vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; /* Moves progress bar to bottom */
+    padding-bottom: 80px; /* Space between logo and progress bar */
+}
+
+.splash-container {
+    text-align: center;
+}
+
+.progress-bar {
+    width: 250px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.progress {
+    height: 100%;
+    width: 0;
+    background: white;
+    border-radius: 2px;
+    animation: load 2s linear forwards;
+}
+
+/* Keyframes remain the same */
+@keyframes load {
+    0% { width: 0; }
+    100% { width: 100%; }
+}
+.splash-screen {
+    animation: fadeIn 0.5s ease-out;
+}
+@media (max-width: 600px) {
+    .splash-screen {
+        background-size: 150px;
+        padding-bottom: 60px;
+    }
+    .progress-bar {
+        width: 200px;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.header-logo {
+    background-image: url("images/logo.png");
+    background-size: contain; /* or 'cover' depending on your need */
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 150px;   /* adjust as needed */
+    height: 80px;   /* adjust as needed */
+    display: block;
+}
+
+/* Homepage Specific Styles */
+.hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                url('../images/bank-building.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-align: center;
+    padding: 100px 20px;
+    min-height:calc(100vh - 150px);
+    display: flex;
+    align-items: center;
+    margin-bottom:0;
+}
+
+.hero .container {
+    max-width: 800px;
+    margin: auto auto;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    animation: fadeInDown 1s ease;
+}
+
+.hero .subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+    animation: fadeIn 1.5s ease;
+}
+
+.cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease;
+}
+
+.btn {
+    display: inline-block;
+    padding: 15px 30px;
+    border-radius: 5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 200px;
+    width: 100%; /* Make buttons equal width */
+    max-width: 250px; /* Set a max-width for larger screens */
+    box-sizing: border-box;
+}
+
+.btn-primary {
+    background-color: #0056b3; /* Blue color */
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background-color: #28a745; /* Green on hover */
+}
+
+.btn-secondary {
+    background-color: #0056b3 !important; /* Blue color */
+    color: white !important;
+}
+
+.btn-secondary:hover {
+    background-color: #28a745 !important; /* Green on hover */
+    color: var(--white) !important;
+}
+
+/* Footer */
+.main-footer {
+    background-color: #343a40;
+    color: var(--white);
+    padding: 30px 0;
+    text-align: center;
+    width: 100%;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 0 auto;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-links a {
+    color: var(--white);
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--primary-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero .subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+/* Account Form Container */
+.account-form-container {
+    padding: 50px 0;
+    background-color: #f9f9f9;
+    min-height: calc(100vh - 150px);
+}
+
+.account-form-container .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.account-form-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2858e6; /* Green color */
+    width: 100%;
+    font-size: 2rem;
+}
+
+/* Form Styling */
+#accountForm {
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.btn-primary {
+    background: #2858e6; /* Green color */
+    color: white;
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+}
+/* Success Page Styles */
+.success-container {
+    padding: 50px 0;
+    min-height: calc(100vh - 150px);
+    display: flex;
+    align-items: center;
+}
+
+.success-card {
+    background: white;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.success-icon {
+    width: 80px;
+    margin-bottom: 20px;
+}
+
+.account-details {
+    margin: 30px 0;
+}
+
+.account-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0056b3;
+    margin: 10px 0;
+    padding: 10px;
+    background: #f0f7ff;
+    border-radius: 4px;
+}
+/* Login Page Styles */
+.login-container {
+    padding: 50px 0;
+    min-height: calc(100vh - 150px);
+    display: flex;
+    align-items: center;
+}
+
+.login-card {
+    background: white;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.login-card h1 {
+    margin-bottom: 30px;
+    color: #0056b3;
+}
+
+.toggle-buttons {
+    display: flex;
+    margin-bottom: 25px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #0056b3;
+}
+
+.toggle-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: #0056b3;
+}
+
+.toggle-btn.active {
+    background: #0056b3;
+    color: white;
+}
+
+.login-links {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.login-links a {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+.login-links a:hover {
+    text-decoration: underline;
+}
+/* Dashboard Styles */
+.dashboard-container {
+    padding: 30px 0;
+    min-height: calc(100vh - 150px);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.dashboard-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-card h2 {
+    color: #0056b3;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.summary {
+    grid-column: span 1;
+}
+
+.account-info p {
+    margin-bottom: 10px;
+}
+
+.actions {
+    grid-column: span 1;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.transactions {
+    grid-column: span 2;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+/* Admin Dashboard Styles */
+.admin-container {
+    padding: 30px 0;
+    min-height: calc(100vh - 150px);
+}
+
+.admin-tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+    color: #0056b3;
+    border-bottom: 3px solid #0056b3;
+}
+
+.search-bar {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px 0 0 4px;
+}
+
+.search-bar button {
+    border-radius: 0 4px 4px 0;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+/* Card Request Styles */
+.card-request-container {
+    padding: 30px 0;
+    min-height: calc(100vh - 150px);
+}
+
+.card-options {
+    display: flex;
+    gap: 30px;
+    margin: 40px 0;
+}
+
+.card-type {
+    flex: 1;
+    padding: 25px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.card-type:hover {
+    border-color: #0056b3;
+    box-shadow: 0 0 15px rgba(0, 86, 179, 0.1);
+}
+
+.card-type img {
+    width: 120px;
+    margin-bottom: 15px;
+}
+
+.card-features {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+.card-features span {
+    display: block;
+    margin: 5px 0;
+}
+
+/* About Page Styles */
+.about-container {
+    padding: 30px 0;
+}
+
+.about-hero {
+    background: linear-gradient(rgba(0, 86, 179, 0.8), rgba(0, 86, 179, 0.8)), 
+                url('../images/bank-building.jpg');width:500px ;
+    background-size:cover;
+    color: white;
+    padding: 80px 100px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 40px;
+}
+
+.about-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 25px;
+}
+
+.about-section {
+    margin-bottom: 50px;
+}
+
+.about-section h2 {
+    color: #0056b3;
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 50px;
+    margin: 30px 0;
+}
+
+.stat-card {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.stat-card h3 {
+    font-size: 2.5rem;
+    color: #0056b3;
+    margin-bottom: 10px;
+}
+
+.team-section h2 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 250px;
+}
+
+.team-member {
+    text-align: center;
+}
+
+.team-member img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 5px solid #0056b3;
+}
+
+/* Contact Page Styles */
+.contact-container {
+    padding: 30px 0;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin: 40px 0;
+}
+
+.contact-info {
+    background: white;
+    margin: 20px;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.info-item img {
+    width: 40px;
+    margin-right: 20px;
+}
+
+.working-hours {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.branches-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 250px;
+    margin-top: 30px;
+}
+
+.branch-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Footer Styles */
+.main-footer {
+    background: #0056b3;
+    color: white;
+    padding: 50px 0 20px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.footer-logo {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+.footer-col h3 {
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer-col a:hover {
+    text-decoration: underline;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Transaction Styles */
+.deposit {
+    color: #28a745;
+}
+
+.withdrawal {
+    color: #dc3545;
+}
+
+.transaction-actions {
+    margin-bottom: 20px;
+}
+
+#transactionHistory {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#transactionHistory th {
+    background: #f8f9fa;
+}
+
+#transactionHistory tr:nth-child(even) {
+    background: #f9f9f9;
+}
+/* Header and Navigation Styles */
+.main-header {
+    background-color: #0056b3;
+    color: white;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Added to fix wrapping in smaller screens */
+}
+
+.header-logo {
+    width: 150px;
+    height: 40px;
+    background-image: url('../images/logo.png'); /* adjust path if needed */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Navigation */
+nav ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    padding-left: 0;
+    margin: 0;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover,
+nav a.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Hamburger Placeholder for Mobile (optional to use later) */
+.hamburger {
+    display: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+/* Responsive Navigation */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block;
+    }
+
+    nav {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background-color: #0056b3;
+        padding: 20px 0;
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+        transition: clip-path 0.4s ease-out;
+    }
+
+    nav.show {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+}
