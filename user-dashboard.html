@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body onload="loadDashboard()">
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="user-dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="request-card.html">Cards</a></li>
+                    <li><a href="login.html" onclick=" return logout();">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="container">
+            <h1>Welcome, <span id="userName"></span></h1>
+            
+            <div class="dashboard-grid">
+                <!-- Account Summary -->
+                <div class="dashboard-card summary">
+                    <h2>Account Summary</h2>
+                    <div class="account-info">
+                        <p><strong>Account Number:</strong> <span id="accountNumber"></span></p>
+                        <p><strong>Account Type:</strong> <span id="accountType"></span></p>
+                        <p><strong>Balance:</strong> ₹<span id="accountBalance"></span></p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card actions">
+                    <h2>Quick Actions</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary">Transfer Money</button>
+                        <button class="btn btn-secondary">Pay Bills</button>
+                        <a href="request-card.html" class="btn btn-primary">Request Card</a>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="dashboard-card transactions">
+                    <h2>Recent Transactions</h2>
+                    <div class="transaction-actions">
+                        <button class="btn btn-small" onclick="showTransactionForm('deposit')">Deposit</button>
+                        <button class="btn btn-small" onclick="showTransactionForm('withdrawal')">Withdraw</button>
+                    </div>
+                    
+                    <div id="transactionForm" style="display: none;">
+                        <form id="transactionFormContent">
+                            <input type="hidden" id="transactionType">
+                            <div class="form-group">
+                                <label for="transactionAmount">Amount (₹)</label>
+                                <input type="number" id="transactionAmount" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionDesc">Description</label>
+                                <input type="text" id="transactionDesc" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideTransactionForm()">Cancel</button>
+                        </form>
+                    </div>
+                    
+                    <table id="transactionHistory">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Helper functions
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function getTransactions() {
+            const stored = localStorage.getItem('doraBankTransactions');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function addTransaction(transaction) {
+            const transactions = getTransactions();
+            transactions.push(transaction);
+            localStorage.setItem('doraBankTransactions', JSON.stringify(transactions));
+        }
+
+        // Dashboard functions
+        function loadDashboard() {
+            const user = checkAuth(); // Checks if user is logged in
+            
+            // Display user info
+            document.getElementById('userName').textContent = user.fullName;
+            document.getElementById('accountNumber').textContent = user.accountNumber;
+            document.getElementById('accountType').textContent = 
+                user.accountType === 'savings' ? 'Savings Account' :
+                user.accountType === 'checking' ? 'Checking Account' : 'Credit Card Account';
+            document.getElementById('accountBalance').textContent = user.balance;
+            
+            // Load transactions
+            loadTransactions();
+        }
+
+        function loadTransactions() {
+            const user = getCurrentUser();
+            const transactions = getTransactions().filter(
+                t => t.accountNumber === user.accountNumber
+            ).sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const tableBody = document.getElementById('transactionHistory').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4">No transactions found</td></tr>';
+                return;
+            }
+            
+            transactions.forEach(trans => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(trans.date)}</td>
+                    <td>${trans.description || 'N/A'}</td>
+                    <td>₹${trans.amount.toFixed(2)}</td>
+                    <td class="${trans.type}">${trans.type.charAt(0).toUpperCase() + trans.type.slice(1)}</td>
+                `;
+            });
+        }
+
+        // Transaction form handling
+        function showTransactionForm(type) {
+            document.getElementById('transactionType').value = type;
+            document.getElementById('transactionForm').style.display = 'block';
+            document.getElementById('transactionFormContent').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function hideTransactionForm() {
+            document.getElementById('transactionForm').style.display = 'none';
+            document.getElementById('transactionFormContent').reset();
+        }
+        
+        document.getElementById('transactionFormContent').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const user = getCurrentUser();
+            const type = document.getElementById('transactionType').value;
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const description = document.getElementById('transactionDesc').value;
+            
+            // Update balance
+            if (type === 'deposit') {
+                user.balance = (parseFloat(user.balance) + amount).toFixed(2);
+            } else {
+                if (amount > parseFloat(user.balance)) {
+                    alert('Insufficient balance!');
+                    return;
+                }
+                user.balance = (parseFloat(user.balance) - amount).toFixed(2);
+            }
+            
+            // Update user in database
+            const users = getUsers();
+            const userIndex = users.findIndex(u => u.accountNumber === user.accountNumber);
+            users[userIndex] = user;
+            localStorage.setItem('doraBankUsers', JSON.stringify(users));
+            
+            // Create transaction
+            const newTransaction = {
+                date: new Date().toISOString().split('T')[0],
+                accountNumber: user.accountNumber,
+                type: type,
+                amount: amount,
+                description: description
+            };
+            
+            addTransaction(newTransaction);
+            
+            // Update display
+            document.getElementById('accountBalance').textContent = user.balance;
+            loadTransactions();
+            hideTransactionForm();
+            
+            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} successful!`);
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+        // Force logout if session is invalid
+        if (!getCurrentUser()) {
+            logout();
+        }
+    });
+    
+    // Add confirmation dialog for logout
+    window.logout = function() {
+        if (confirm('Are you sure you want to logout?')) {
+            Auth.logout();
+        }
+        return false;
+    };
+    </script>
+</body>
+</html>

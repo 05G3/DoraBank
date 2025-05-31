@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Created - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="login.html">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="success-container">
+        <div class="container">
+            <div class="success-card">
+                <img src="images/success-icon.png" alt="Success" class="success-icon">
+                <h1>Account Created Successfully!</h1>
+                
+                <div class="account-details">
+                    <p>Your Dora Bank account number:</p>
+                    <div class="account-number" id="accountNumber"></div>
+                    <p>Please note this number for future reference</p>
+                </div>
+                
+                <a href="login.html" class="btn btn-primary">Proceed to Login</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Get account number from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const accNumber = urlParams.get('acc');
+        
+        if (accNumber) {
+            document.getElementById('accountNumber').textContent = accNumber;
+        } else {
+            window.location.href = 'create-account.html';
+        }
+    </script>
+</body>
+</html>

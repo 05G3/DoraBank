@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header remains unchanged -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="create-account.html">Open Account</a></li>
+                    <li><a href="login.html" class="active">Login</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="login-container">
+        <div class="container">
+            <div class="login-card">
+                <h1>Welcome Back</h1>
+                
+                <div class="toggle-buttons">
+                    <button id="userLoginBtn" class="toggle-btn active">User Login</button>
+                    <button id="adminLoginBtn" class="toggle-btn">Admin Login</button>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Account Number/Email</label>
+                        <input type="text" id="username" required placeholder="DORA-SAV-1234 or email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+
+                <div class="login-links">
+                    <a href="#">Forgot Password?</a>
+                    <span>New to Dora Bank? <a href="create-account.html">Open Account</a></span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+    // Toggle between User/Admin login
+    const userLoginBtn = document.getElementById('userLoginBtn');
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.querySelector('.btn-primary');
+
+    // Set initial login type
+    let isAdminLogin = false;
+
+    userLoginBtn.addEventListener('click', function() {
+        userLoginBtn.classList.add('active');
+        adminLoginBtn.classList.remove('active');
+        isAdminLogin = false;
+        document.getElementById('username').focus();
+    });
+
+    adminLoginBtn.addEventListener('click', function() {
+        adminLoginBtn.classList.add('active');
+        userLoginBtn.classList.remove('active');
+        isAdminLogin = true;
+        document.getElementById('username').focus();
+    });
+
+    // Handle form submission
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Authenticating...';
+
+        try {
+            const user = authenticateUser(username, password, isAdminLogin);
+            
+            if (user) {
+                // Add slight delay for better UX
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Redirect based on user type
+                window.location.href = isAdminLogin ? 
+                    "admin-dashboard.html" : "user-dashboard.html";
+            } else {
+                throw new Error("Invalid credentials or account type");
+            }
+        } catch (error) {
+            alert(error.message || "Login failed. Please check your credentials.");
+            document.getElementById('password').value = '';
+            document.getElementById('username').focus();
+        } finally {
+            // Reset button state
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Login';
+        }
+    });
+
+    // Check if already logged in on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clear any existing session data (using correct key)
+        if (sessionStorage.getItem('doraBankSession')) {
+            sessionStorage.removeItem('doraBankSession');
+        }
+        
+        // Redirect if already logged in
+        const user = getCurrentUser();
+        if (user) {
+            window.location.href = user.accountType === 'admin' ? 
+                'admin-dashboard.html' : 'user-dashboard.html';
+        }
+    });
+</script>
+</body>
+</html>

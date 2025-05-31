@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body onload="loadAdminDashboard()">
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="login.html" onclick=" return ogout();">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <div class="container">
+            <h1>Admin Dashboard</h1>
+            
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="openTab('accounts')">Accounts</button>
+                <button class="tab-btn" onclick="openTab('transactions')">Transactions</button>
+                <button class="tab-btn" onclick="openTab('cards')">Cards</button>
+            </div>
+
+            <!-- Accounts Tab -->
+            <div id="accounts" class="tab-content" style="display: block;">
+                <div class="search-bar">
+                    <input type="text" id="accountSearch" placeholder="Search accounts...">
+                    <button class="btn btn-secondary">Search</button>
+                </div>
+                <div class="table-container">
+                    <table id="accountsTable">
+                        <thead>
+                            <tr>
+                                <th>Account No.</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Balance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="transactions" class="tab-content">
+                <div class="table-container">
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Cards Tab -->
+            <div id="cards" class="tab-content">
+                <div class="table-container">
+                    <table id="cardsTable">
+                        <thead>
+                            <tr>
+                                <th>Card Number</th>
+                                <th>Account</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Expiry</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function loadAdminDashboard() {
+            const admin = checkAuth();
+            if (!admin || admin.accountType !== 'admin') {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Load accounts
+            const users = getUsers().filter(u => u.accountType !== 'admin');
+            const accountsTable = document.getElementById('accountsTable').getElementsByTagName('tbody')[0];
+            
+            users.forEach(user => {
+                const row = accountsTable.insertRow();
+                row.innerHTML = `
+                    <td>${user.accountNumber}</td>
+                    <td>${user.fullName}</td>
+                    <td>${user.accountType.charAt(0).toUpperCase() + user.accountType.slice(1)}</td>
+                    <td>₹${user.balance}</td>
+                    <td>
+                        <button class="btn btn-small" onclick="viewAccount('${user.accountNumber}')">View</button>
+                    </td>
+                `;
+            });
+        }
+
+        function openTab(tabName) {
+            // Tab switching logic
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = "none";
+            }
+
+            const tabButtons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.classList.add("active");
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Force logout if session is invalid
+        if (!getCurrentUser()) {
+            logout();
+        }
+    });
+    
+    // Add confirmation dialog for logout
+    window.logout = function() {
+        if (confirm('Are you sure you want to logout?')) {
+            Auth.logout();
+        }
+        return false;
+    };
+    </script>
+</body>
+</html>

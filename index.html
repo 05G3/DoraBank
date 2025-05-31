@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dora Bank - Home</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Ensure the page takes at least full viewport height */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <header class="main-header">
+            <div class="container">
+                <div class="header-logo"></div>
+                <nav>
+                    <ul>
+                        <li><a href="index.html" class="active">Home</a></li>
+                        <li><a href="create-account.html">Open Account</a></li>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </nav>
+                <div class="hamburger" onclick="toggleMenu()">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="container">
+                <h1>Welcome to Dora Bank</h1>
+                <p class="subtitle">Your trusted financial partner since 2023</p>
+                <div class="cta-buttons">
+                    <a href="create-account.html" class="btn btn-primary">Open New Account</a>
+                    <a href="login.html" class="btn btn-secondary">Internet Banking</a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2023 Dora Bank. All rights reserved.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const nav = document.querySelector('nav');
+            nav.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

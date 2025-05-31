@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Card - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body onload="checkAuth()">
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="user-dashboard.html">Dashboard</a></li>
+                    <li><a href="request-card.html" class="active">Cards</a></li>
+                    <li><a href="#" onclick="logout()">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="card-request-container">
+        <div class="container">
+            <h1>Request New Card</h1>
+            
+            <div class="card-options">
+                <div class="card-type" onclick="selectCardType('debit')">
+                    <img src="images/debit-card.png" alt="Debit Card">
+                    <h3>Debit Card</h3>
+                    <p>Link directly to your account</p>
+                    <div class="card-features">
+                        <span>Zero annual fees</span>
+                        <span>ATM withdrawals</span>
+                    </div>
+                </div>
+
+                <div class="card-type" onclick="selectCardType('credit')">
+                    <img src="images/credit-card.png" alt="Credit Card">
+                    <h3>Credit Card</h3>
+                    <p>Up to ₹1,00,000 limit</p>
+                    <div class="card-features">
+                        <span>Reward points</span>
+                        <span>45 days interest-free</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="cardRequestForm" style="display: none;">
+                <h2 id="cardFormTitle">Request <span id="cardTypeDisplay"></span> Card</h2>
+                <input type="hidden" id="cardTypeInput">
+                
+                <div class="form-group">
+                    <label for="cardDesign">Card Design</label>
+                    <select id="cardDesign">
+                        <option value="classic">Classic (Blue)</option>
+                        <option value="gold">Gold</option>
+                        <option value="platinum">Platinum</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="deliveryAddress">Delivery Address</label>
+                    <textarea id="deliveryAddress" required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit Request</button>
+            </form>
+            
+            <!-- Add this div to display the generated card -->
+            <div id="cardResult" class="card-result-container"></div>
+        </div>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let selectedCardType = '';
+        
+        function selectCardType(type) {
+            selectedCardType = type;
+            document.getElementById('cardFormTitle').style.display = 'block';
+            document.getElementById('cardTypeDisplay').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+            document.getElementById('cardTypeInput').value = type;
+            document.getElementById('cardRequestForm').style.display = 'block';
+            
+            // Scroll to form
+            document.getElementById('cardRequestForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Helper functions
+        function generateCVV() {
+            return Math.floor(100 + Math.random() * 900);
+        }
+        
+        function formatCardNumber(number) {
+            return number.match(/.{1,4}/g).join(' ');
+        }
+        
+        function updateUser(updatedUser) {
+            let users = getUsers();
+            const index = users.findIndex(u => u.accountNumber === updatedUser.accountNumber);
+            if (index !== -1) {
+                users[index] = updatedUser;
+                localStorage.setItem('doraBankUsers', JSON.stringify(users));
+            }
+        }
+
+        document.getElementById('cardRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const user = getCurrentUser();
+            const cardType = document.getElementById('cardTypeInput').value;
+            
+            // Generate card details
+            const cardDetails = {
+                cardNumber: generateCardNumber(),
+                expiryDate: generateExpiryDate(),
+                cvv: generateCVV(),
+                cardHolder: user.fullName,
+                type: cardType,
+                status: "Active",
+                design: document.getElementById('cardDesign').value,
+                deliveryAddress: document.getElementById('deliveryAddress').value
+            };
+            
+            // Add to user's cards
+            if (!user.cards) user.cards = [];
+            user.cards.push(cardDetails);
+            
+            // Update user in database
+            updateUser(user);
+            
+            // Display generated card
+            displayGeneratedCard(cardDetails);
+        });
+
+        function displayGeneratedCard(cardDetails) {
+  const cardHTML = `
+    <div class="generated-card">
+      <div class="card-front card-${cardDetails.design}">
+        <div class="card-logo"><img src="images/logo.png" alt="Bank Logo"></div>
+        <div class="card-number">${formatCardNumber(cardDetails.cardNumber)}</div>
+        <div class="card-details">
+          <div class="card-holder">${cardDetails.cardHolder}</div>
+          <div class="card-expiry">${cardDetails.expiryDate}</div>
+        </div>
+      </div>
+      <div class="card-back">
+        <div class="card-magnetic-strip"></div>
+        <div class="card-signature"></div>
+        <div class="card-cvv">CVV: ${cardDetails.cvv}</div>
+      </div>
+    </div>
+    <div class="card-credentials">
+      <p><strong>Card Number:</strong> ${cardDetails.cardNumber}</p>
+      <p><strong>Expiry Date:</strong> ${cardDetails.expiryDate}</p>
+      <p><strong>CVV:</strong> ${cardDetails.cvv}</p>
+      <button onclick="window.print()" class="btn btn-secondary">Print Details</button>
+    </div>
+  `;
+  
+  document.getElementById('cardRequestForm').style.display = 'none';
+  document.getElementById('cardResult').innerHTML = cardHTML;
+}
+
+        function generateCardNumber() {
+            return '4' + // Visa starts with 4
+                Math.floor(1000 + Math.random() * 9000) +
+                Math.floor(1000 + Math.random() * 9000) +
+                Math.floor(1000 + Math.random() * 9000) +
+                Math.floor(1000 + Math.random() * 9000);
+        }
+
+        function generateExpiryDate() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const year = now.getFullYear() + 3;
+            return (month < 10 ? '0' + month : month) + '/' + year.toString().slice(2);
+        }
+    </script>
+</body>
+</html>
