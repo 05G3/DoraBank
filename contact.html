@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="create-account.html">Open Account</a></li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html" class="active">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="contact-container">
+        <div class="container">
+            <h1>Get in Touch</h1>
+            
+            <div class="contact-grid">
+                <section class="contact-info">
+                    <h2>Contact Information</h2>
+                    
+                    <div class="info-item">
+                        <img src="images/icon-phone.png" alt="Phone">
+                        <div>
+                            <h3>Phone</h3>
+                            <p>+91 98765 43210</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <img src="images/icon-email.png" alt="Email">
+                        <div>
+                            <h3>Email</h3>
+                            <p>support@dorabank.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <img src="images/icon-location.png" alt="Location">
+                        <div>
+                            <h3>Headquarters</h3>
+                            <p>Dora Tower, Financial District, Mumbai, India - 400001</p>
+                        </div>
+                    </div>
+                    
+                    <div class="working-hours">
+                        <h3>Working Hours</h3>
+                        <p>Monday to Friday: 9:00 AM - 6:00 PM</p>
+                        <p>Saturday: 9:00 AM - 2:00 PM</p>
+                    </div>
+                </section>
+                
+                <section class="contact-form">
+                    <h2>Send Us a Message</h2>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Your Name*</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email*</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Message*</label>
+                            <textarea id="message" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </section>
+            </div>
+            
+            <section class="branches-section">
+                <h2>Our Branches</h2>
+                <div class="branches-grid">
+                    <div class="branch-card">
+                        <h3>Mumbai</h3>
+                        <p>Dora Tower, Financial District</p>
+                        <p>Phone: +91 22 1234 5678</p>
+                    </div>
+                    <div class="branch-card">
+                        <h3>Delhi</h3>
+                        <p>Connaught Place, Block C</p>
+                        <p>Phone: +91 11 2345 6789</p>
+                    </div>
+                    <div class="branch-card">
+                        <h3>Bangalore</h3>
+                        <p>MG Road, Tech Park</p>
+                        <p>Phone: +91 80 3456 7890</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="images/logo-white.png" alt="Dora Bank" class="footer-logo">
+                    <p>Your trusted financial partner.</p>
+                </div>
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Help</h3>
+                    <ul>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Customer Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <p class="copyright">&copy; 2023 Dora Bank. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>

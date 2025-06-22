@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="admin-dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="login.html" onclick="return logout();">Logout</a></li>
+                </ul>
+            </nav>
+            <div class="admin-profile">
+                <img src="images/cfo.jpg" alt="Admin" class="admin-photo">
+                <span class="admin-name">Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <div class="container">
+            <div class="admin-header">
+                <h1>Admin Dashboard</h1>
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p id="totalUsers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Balance</h3>
+                        <p id="totalBalance">₹0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Transactions</h3>
+                        <p id="todayTransactions">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Cards</h3>
+                        <p id="activeCards">0</p>
+                    </div>
+                </div>
+                
+                <div class="admin-overview">
+                    <div class="overview-section">
+                        <h3>Account Types Distribution</h3>
+                        <div class="account-types" id="accountTypes">
+                            <!-- Filled by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="overview-section">
+                        <h3>Recent Activities</h3>
+                        <div class="recent-activities" id="recentActivities">
+                            <!-- Filled by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="openTab('users')">Users</button>
+                <button class="tab-btn" onclick="openTab('transactions')">Transactions</button>
+                <button class="tab-btn" onclick="openTab('cards')">Cards</button>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users" class="tab-content" style="display: block;">
+                <div class="search-bar">
+                    <input type="text" id="userSearch" placeholder="Search users by name, email, or account number...">
+                    <button class="btn btn-secondary" onclick="searchUsers()">Search</button>
+                </div>
+                <div class="users-grid" id="usersGrid">
+                    <!-- Filled by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Transactions Tab -->
+            <div id="transactions" class="tab-content">
+                <div class="search-bar">
+                    <input type="text" id="transactionSearch" placeholder="Search transactions...">
+                    <button class="btn btn-secondary" onclick="searchTransactions()">Search</button>
+                </div>
+                <div class="table-container">
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Account</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Cards Tab -->
+            <div id="cards" class="tab-content">
+                <div class="table-container">
+                    <table id="cardsTable">
+                        <thead>
+                            <tr>
+                                <th>Card Number</th>
+                                <th>Account</th>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Expiry</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- User Detail Modal -->
+    <div id="userModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <div id="userModalContent">
+                <!-- Filled by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAdmin = null;
+        let allUsers = [];
+        let allTransactions = [];
+
+        function loadAdminDashboard() {
+            currentAdmin = checkAuth(true); // Require admin
+            if (!currentAdmin || currentAdmin.accountType !== 'admin') {
+                window.location.href = "login.html";
+                return;
+            }
+
+            loadStats();
+            loadUsers();
+            loadTransactions();
+            loadCards();
+        }
+
+        function loadStats() {
+            const users = BankDB.getUsers().filter(u => u.accountType !== 'admin');
+            const transactions = BankDB.getTransactions();
+            const cards = BankDB.getCards();
+            
+            // Calculate stats
+            const totalUsers = users.length;
+            const totalBalance = users.reduce((sum, user) => sum + parseFloat(user.balance), 0);
+            const today = new Date().toISOString().split('T')[0];
+            const todayTransactions = transactions.filter(t => t.date === today).length;
+            const activeCards = cards.filter(c => c.status === 'Active').length;
+            
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalBalance').textContent = `₹${totalBalance.toFixed(2)}`;
+            document.getElementById('todayTransactions').textContent = todayTransactions;
+            document.getElementById('activeCards').textContent = activeCards;
+            
+            // Load overview sections
+            loadAccountTypesDistribution(users);
+            loadRecentActivities(transactions);
+        }
+
+        function loadAccountTypesDistribution(users) {
+            const accountTypes = {};
+            users.forEach(user => {
+                accountTypes[user.accountType] = (accountTypes[user.accountType] || 0) + 1;
+            });
+            
+            const accountTypesDiv = document.getElementById('accountTypes');
+            let html = '';
+            
+            Object.entries(accountTypes).forEach(([type, count]) => {
+                const percentage = ((count / users.length) * 100).toFixed(1);
+                html += `
+                    <div class="account-type-item">
+                        <div class="account-type-info">
+                            <span class="account-type-name">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                            <span class="account-type-count">${count} users</span>
+                        </div>
+                        <div class="account-type-bar">
+                            <div class="account-type-progress" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="account-type-percentage">${percentage}%</span>
+                    </div>
+                `;
+            });
+            
+            accountTypesDiv.innerHTML = html;
+        }
+
+        function loadRecentActivities(transactions) {
+            const recentActivitiesDiv = document.getElementById('recentActivities');
+            const recentTransactions = transactions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+            
+            let html = '';
+            recentTransactions.forEach(trans => {
+                const user = BankDB.getUserByAccount(trans.accountNumber);
+                const timeAgo = getTimeAgo(new Date(trans.date));
+                html += `
+                    <div class="activity-item">
+                        <div class="activity-icon ${trans.type}"></div>
+                        <div class="activity-details">
+                            <div class="activity-title">${trans.type.charAt(0).toUpperCase() + trans.type.slice(1)}</div>
+                            <div class="activity-subtitle">${user ? user.fullName : 'Unknown'} - ₹${trans.amount.toFixed(2)}</div>
+                            <div class="activity-time">${timeAgo}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (recentTransactions.length === 0) {
+                html = '<p class="no-activities">No recent activities</p>';
+            }
+            
+            recentActivitiesDiv.innerHTML = html;
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInMs = now - date;
+            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+            
+            if (diffInDays === 0) return 'Today';
+            if (diffInDays === 1) return 'Yesterday';
+            if (diffInDays < 7) return `${diffInDays} days ago`;
+            if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+            return `${Math.floor(diffInDays / 30)} months ago`;
+        }
+
+        function loadUsers() {
+            allUsers = BankDB.getUsers().filter(u => u.accountType !== 'admin');
+            displayUsers(allUsers);
+        }
+
+        function displayUsers(users) {
+            const usersGrid = document.getElementById('usersGrid');
+            usersGrid.innerHTML = '';
+            
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'user-card';
+                userCard.innerHTML = `
+                    <div class="user-photo">
+                        <img src="${user.photo || 'images/default-avatar.png'}" alt="${user.fullName}" 
+                             onerror="this.src='images/default-avatar.png'">
+                    </div>
+                    <div class="user-info">
+                        <h3>${user.fullName}</h3>
+                        <p>${user.accountType.charAt(0).toUpperCase() + user.accountType.slice(1)} Account</p>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-small" onclick="viewUserDetails('${user.accountNumber}')">View Details</button>
+                    </div>
+                `;
+                usersGrid.appendChild(userCard);
+            });
+        }
+
+        function loadTransactions() {
+            allTransactions = BankDB.getTransactions();
+            displayTransactions(allTransactions);
+        }
+
+        function displayTransactions(transactions) {
+            const tableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            transactions.forEach(trans => {
+                const user = BankDB.getUserByAccount(trans.accountNumber);
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(trans.date)}</td>
+                    <td>${trans.accountNumber}</td>
+                    <td>${user ? user.fullName : 'Unknown'}</td>
+                    <td class="${trans.type}">${trans.type.charAt(0).toUpperCase() + trans.type.slice(1)}</td>
+                    <td>₹${trans.amount.toFixed(2)}</td>
+                    <td>${trans.description || 'N/A'}</td>
+                `;
+            });
+        }
+
+        function loadCards() {
+            const cards = BankDB.getCards();
+            const tableBody = document.getElementById('cardsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            if (cards.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No cards issued yet</td></tr>';
+                return;
+            }
+            
+            cards.forEach(card => {
+                const user = BankDB.getUserByAccount(card.accountNumber);
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>
+                        <div class="card-display">
+                            <div class="card-preview">
+                                <img src="images/logo-white.png" alt="Card" class="card-logo">
+                                <span class="card-number-display">${card.cardNumber}</span>
+                            </div>
+                            <span class="card-number-text">${card.cardNumber}</span>
+                        </div>
+                    </td>
+                    <td>${card.accountNumber}</td>
+                    <td>${user ? user.fullName : 'Unknown'}</td>
+                    <td>${card.type}</td>
+                    <td><span class="card-status ${card.status.toLowerCase()}">${card.status}</span></td>
+                    <td>${card.expiryDate}</td>
+                `;
+            });
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            const filteredUsers = allUsers.filter(user => 
+                user.fullName.toLowerCase().includes(searchTerm) ||
+                user.email.toLowerCase().includes(searchTerm) ||
+                user.accountNumber.toLowerCase().includes(searchTerm)
+            );
+            displayUsers(filteredUsers);
+        }
+
+        function searchTransactions() {
+            const searchTerm = document.getElementById('transactionSearch').value.toLowerCase();
+            const filteredTransactions = allTransactions.filter(trans => 
+                trans.accountNumber.toLowerCase().includes(searchTerm) ||
+                trans.description.toLowerCase().includes(searchTerm) ||
+                trans.type.toLowerCase().includes(searchTerm)
+            );
+            displayTransactions(filteredTransactions);
+        }
+
+        function viewUserDetails(accountNumber) {
+            window.location.href = `user-details.html?account=${accountNumber}`;
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        function viewUserTransactions(accountNumber) {
+            window.location.href = `user-transactions.html?account=${accountNumber}`;
+        }
+
+        function openTab(tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = "none";
+            }
+
+            const tabButtons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).style.display = "block";
+            event.currentTarget.classList.add("active");
+            
+            // Reload data for the selected tab
+            if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'transactions') {
+                loadTransactions();
+            } else if (tabName === 'cards') {
+                loadCards();
+            }
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                Auth.logout();
+            }
+            return false;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Load dashboard when page loads
+        document.addEventListener('DOMContentLoaded', loadAdminDashboard);
+    </script>
+</body>
+</html>

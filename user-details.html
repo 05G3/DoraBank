@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Details - Dora Bank</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="admin-dashboard.html">Dashboard</a></li>
+                    <li><a href="user-details.html" class="active">User Details</a></li>
+                    <li><a href="login.html" onclick="return logout();">Logout</a></li>
+                </ul>
+            </nav>
+            <div class="admin-profile">
+                <img src="images/cfo.jpg" alt="Admin" class="admin-photo">
+                <span class="admin-name">Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <div class="container">
+            <div class="page-header">
+                <a href="admin-dashboard.html" class="back-btn">← Back to Dashboard</a>
+                <h1>User Details</h1>
+            </div>
+
+            <div class="user-details-container">
+                <div class="user-profile-section">
+                    <div class="user-photo-large">
+                        <img id="userPhoto" src="images/default-avatar.png" alt="User Photo" 
+                             onerror="this.src='images/default-avatar.png'">
+                    </div>
+                    <div class="user-basic-info">
+                        <h2 id="userName">Loading...</h2>
+                        <p id="userAccount">Account: Loading...</p>
+                        <p id="userEmail">Email: Loading...</p>
+                        <p id="userPhone">Phone: Loading...</p>
+                    </div>
+                </div>
+
+                <div class="user-details-grid">
+                    <div class="detail-card">
+                        <h3>Account Information</h3>
+                        <div class="detail-item">
+                            <span class="label">Account Number:</span>
+                            <span id="accountNumber">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Account Type:</span>
+                            <span id="accountType">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Balance:</span>
+                            <span id="accountBalance">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Status:</span>
+                            <span class="status-active">Active</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3>Personal Information</h3>
+                        <div class="detail-item">
+                            <span class="label">Full Name:</span>
+                            <span id="fullName">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Email:</span>
+                            <span id="email">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Phone:</span>
+                            <span id="phone">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Address:</span>
+                            <span id="address">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3>Cards Information</h3>
+                        <div id="cardsInfo">
+                            <p>Loading cards...</p>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="viewUserTransactions()">View Transactions</button>
+                            <button class="btn btn-secondary" onclick="editUser()">Edit User</button>
+                            <button class="btn btn-secondary" onclick="generateCard()">Generate Card</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+
+        function loadUserDetails() {
+            // Check admin authentication
+            const admin = checkAuth(true);
+            if (!admin || admin.accountType !== 'admin') {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Get account number from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const accountNumber = urlParams.get('account');
+            
+            if (!accountNumber) {
+                alert('No account number provided');
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            // Load user data
+            currentUser = BankDB.getUserByAccount(accountNumber);
+            if (!currentUser) {
+                alert('User not found');
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            displayUserDetails();
+        }
+
+        function displayUserDetails() {
+            // Basic info
+            document.getElementById('userName').textContent = currentUser.fullName;
+            document.getElementById('userAccount').textContent = `Account: ${currentUser.accountNumber}`;
+            document.getElementById('userEmail').textContent = `Email: ${currentUser.email}`;
+            document.getElementById('userPhone').textContent = `Phone: ${currentUser.phone}`;
+
+            // Photo
+            if (currentUser.photo) {
+                document.getElementById('userPhoto').src = currentUser.photo;
+            }
+
+            // Account information
+            document.getElementById('accountNumber').textContent = currentUser.accountNumber;
+            document.getElementById('accountType').textContent = currentUser.accountType.charAt(0).toUpperCase() + currentUser.accountType.slice(1);
+            document.getElementById('accountBalance').textContent = `₹${parseFloat(currentUser.balance).toFixed(2)}`;
+
+            // Personal information
+            document.getElementById('fullName').textContent = currentUser.fullName;
+            document.getElementById('email').textContent = currentUser.email;
+            document.getElementById('phone').textContent = currentUser.phone;
+            document.getElementById('address').textContent = currentUser.address;
+
+            // Cards information
+            displayCardsInfo();
+        }
+
+        function displayCardsInfo() {
+            const cardsInfo = document.getElementById('cardsInfo');
+            const cards = BankDB.getCardsByAccount(currentUser.accountNumber);
+            
+            if (cards.length === 0) {
+                cardsInfo.innerHTML = '<p>No cards issued yet.</p>';
+                return;
+            }
+
+            let cardsHtml = '';
+            cards.forEach(card => {
+                cardsHtml += `
+                    <div class="card-item">
+                        <div class="card-number">${card.cardNumber}</div>
+                        <div class="card-details">
+                            <span class="card-type">${card.type}</span>
+                            <span class="card-status ${card.status.toLowerCase()}">${card.status}</span>
+                            <span class="card-expiry">Expires: ${card.expiryDate}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cardsInfo.innerHTML = cardsHtml;
+        }
+
+        function viewUserTransactions() {
+            window.location.href = `user-transactions.html?account=${currentUser.accountNumber}`;
+        }
+
+        function editUser() {
+            // TODO: Implement edit user functionality
+            alert('Edit user functionality coming soon!');
+        }
+
+        function generateCard() {
+            // TODO: Implement card generation
+            alert('Card generation functionality coming soon!');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                Auth.logout();
+            }
+            return false;
+        }
+
+        // Load user details when page loads
+        document.addEventListener('DOMContentLoaded', loadUserDetails);
+    </script>
+</body>
+</html> 
