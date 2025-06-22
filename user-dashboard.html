@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account - Dora Bank</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/data.js"></script>
-    <script src="js/auth.js"></script>
 </head>
 <body onload="loadDashboard()">
     <header class="main-header">
@@ -24,16 +22,7 @@
 
     <main class="dashboard-container">
         <div class="container">
-            <div class="user-header">
-                <div class="user-profile">
-                    <img id="userPhoto" src="images/default-avatar.png" alt="User Photo" 
-                         onerror="this.src='images/default-avatar.png'">
-                    <div class="user-info">
-                        <h1 id="userName"></h1>
-                        <p id="userEmail"></p>
-                    </div>
-                </div>
-            </div>
+            <h1>Welcome, <span id="userName"></span></h1>
             
             <div class="dashboard-grid">
                 <!-- Account Summary -->
@@ -98,6 +87,8 @@
         </div>
     </main>
 
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
     <script>
         // Helper functions
         function formatDate(dateString) {
@@ -122,17 +113,11 @@
             
             // Display user info
             document.getElementById('userName').textContent = user.fullName;
-            document.getElementById('userEmail').textContent = user.email;
             document.getElementById('accountNumber').textContent = user.accountNumber;
             document.getElementById('accountType').textContent = 
                 user.accountType === 'savings' ? 'Savings Account' :
                 user.accountType === 'checking' ? 'Checking Account' : 'Credit Card Account';
             document.getElementById('accountBalance').textContent = user.balance;
-            
-            // Display user photo
-            if (user.photo) {
-                document.getElementById('userPhoto').src = user.photo;
-            }
             
             // Load transactions
             loadTransactions();

@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Account - Dora Bank</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/data.js"></script>
-    <script src="js/auth.js"></script>
 </head>
 <body>
     <header class="main-header">
@@ -68,77 +66,38 @@
                     <input type="password" id="password" required placeholder="••••••••">
                 </div>
 
-                <div class="form-group">
-                    <label for="userPhoto">Profile Photo*</label>
-                    <input type="file" id="userPhoto" accept="image/*" required>
-                    <div id="photoPreview" style="display: none; margin-top: 10px;">
-                        <img id="previewImage" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #0056b3;">
-                    </div>
-                </div>
-
                 <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
         </div>
     </main>
 
-    <script>
-    // Debug script loading
-    console.log('=== CREATE ACCOUNT DEBUGGING ===');
-    console.log('BankDB available:', typeof BankDB !== 'undefined');
-    console.log('Validation functions available:', {
-        validateEmail: typeof validateEmail,
-        validatePhone: typeof validatePhone
-    });
-    
-    // Photo preview functionality
-    document.getElementById('userPhoto').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewImage').src = e.target.result;
-                document.getElementById('photoPreview').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-    
+    <script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
     // Make sure BankDB is available
     if (typeof BankDB === 'undefined') {
         console.error('BankDB not loaded!');
-        alert('Error: BankDB not loaded. Please refresh the page.');
     }
 
     document.getElementById('accountForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        console.log('Form submitted');
         
         // Get form values
         const accountType = document.getElementById('accountType').value;
         const initialDeposit = parseFloat(document.getElementById('initialDeposit').value);
         const password = document.getElementById('password').value;
         const email = document.getElementById('email').value.trim();
-        const phone = document.getElementById('phone').value.trim();
-        const photoFile = document.getElementById('userPhoto').files[0];
-        
-        console.log('Form values:', { accountType, initialDeposit, email, phone });
+    const phone = document.getElementById('phone').value.trim();
     
-        if (!validateEmail(email)) {
-            alert('Please enter a valid email address');
-            return;
-        }
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
     
-        if (!validatePhone(phone)) {
-            alert('Phone number must be 10 digits');
-            return;
-        }
-        
-        if (!photoFile) {
-            alert('Please select a profile photo');
-            return;
-        }
-        
+    if (!validatePhone(phone)) {
+        alert('Phone number must be 10 digits');
+        return;
+    }
         // Validate minimum deposit
         if (initialDeposit < 1000) {
             alert('Minimum initial deposit is ₹1000');
@@ -151,50 +110,37 @@
             return;
         }
         
-        // Convert photo to base64
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const photoData = e.target.result;
-            
-            // Generate unique account number
-            const accountNumber = generateAccountNumber(accountType);
-            console.log('Generated account number:', accountNumber);
-            
-            // Create user object
-            const user = {
-                fullName: document.getElementById('fullName').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                address: document.getElementById('address').value.trim(),
-                accountType: accountType,
-                balance: initialDeposit.toFixed(2),
-                accountNumber: accountNumber,
-                password: password,
-                photo: photoData,
-                cards: []
-            };
-            
-            console.log('User object created:', user);
-            
-            try {
-                // Add user through BankDB module
-                console.log('Adding user to BankDB...');
-                const addedUser = BankDB.addUser(user);
-                console.log('User added successfully:', addedUser);
-                
-                if (addedUser) {
-                    // Show success message before redirect
-                    alert(`Account created successfully!\nYour account number: ${accountNumber}`);
-                    window.location.href = `account-created.html?acc=${accountNumber}`;
-                } else {
-                    throw new Error('Failed to create account');
-                }
-            } catch (error) {
-                console.error('Account creation error:', error);
-                alert('Account creation failed. Please try again.\n' + error.message);
-            }
+        // Generate unique account number
+        const accountNumber = generateAccountNumber(accountType);
+        
+        // Create user object
+        const user = {
+            fullName: document.getElementById('fullName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            accountType: accountType,
+            balance: initialDeposit.toFixed(2),
+            accountNumber: accountNumber,
+            password: password,
+            cards: []
         };
-        reader.readAsDataURL(photoFile);
+        
+        try {
+            // Add user through BankDB module
+            const addedUser = BankDB.addUser(user);
+            
+            if (addedUser) {
+                // Show success message before redirect
+                alert(`Account created successfully!\nYour account number: ${accountNumber}`);
+                window.location.href = `account-created.html?acc=${accountNumber}`;
+            } else {
+                throw new Error('Failed to create account');
+            }
+        } catch (error) {
+            console.error('Account creation error:', error);
+            alert('Account creation failed. Please try again.\n' + error.message);
+        }
     });
     
     function generateAccountNumber(type) {

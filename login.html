@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Dora Bank</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/data.js"></script>
-    <script src="js/auth.js"></script>
 </head>
 <body>
     <!-- Header remains unchanged -->
@@ -56,18 +54,9 @@
         </div>
     </main>
 
-    <script>
-    // Check if scripts are loaded
-    console.log('=== LOGIN PAGE DEBUGGING ===');
-    console.log('Data.js loaded:', typeof BankDB !== 'undefined');
-    console.log('Auth.js loaded:', typeof Auth !== 'undefined');
-    console.log('Global functions available:', {
-        authenticateUser: typeof window.authenticateUser,
-        getCurrentUser: typeof window.getCurrentUser,
-        checkAuth: typeof window.checkAuth,
-        logout: typeof window.logout
-    });
-    
+    <script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
     // Toggle between User/Admin login
     const userLoginBtn = document.getElementById('userLoginBtn');
     const adminLoginBtn = document.getElementById('adminLoginBtn');
@@ -77,29 +66,18 @@
     // Set initial login type
     let isAdminLogin = false;
 
-    // Add debugging and error handling
-    console.log('Login page script loaded');
-    console.log('User login button:', userLoginBtn);
-    console.log('Admin login button:', adminLoginBtn);
-
-    userLoginBtn.addEventListener('click', function(e) {
-        console.log('User login button clicked');
-        e.preventDefault();
+    userLoginBtn.addEventListener('click', function() {
         userLoginBtn.classList.add('active');
         adminLoginBtn.classList.remove('active');
         isAdminLogin = false;
         document.getElementById('username').focus();
-        console.log('Switched to user login mode');
     });
 
-    adminLoginBtn.addEventListener('click', function(e) {
-        console.log('Admin login button clicked');
-        e.preventDefault();
+    adminLoginBtn.addEventListener('click', function() {
         adminLoginBtn.classList.add('active');
         userLoginBtn.classList.remove('active');
         isAdminLogin = true;
         document.getElementById('username').focus();
-        console.log('Switched to admin login mode');
     });
 
     // Handle form submission
@@ -109,32 +87,24 @@
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         
-        console.log('Form submitted with:', { username, password, isAdminLogin });
-        
         // Show loading state
         loginBtn.disabled = true;
         loginBtn.textContent = 'Authenticating...';
 
         try {
-            console.log('Calling authenticateUser function...');
             const user = authenticateUser(username, password, isAdminLogin);
-            console.log('Authentication result:', user);
             
             if (user) {
-                console.log('User authenticated successfully:', user);
                 // Add slight delay for better UX
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
                 // Redirect based on user type
-                const redirectUrl = isAdminLogin ? "admin-dashboard.html" : "user-dashboard.html";
-                console.log('Redirecting to:', redirectUrl);
-                window.location.href = redirectUrl;
+                window.location.href = isAdminLogin ? 
+                    "admin-dashboard.html" : "user-dashboard.html";
             } else {
-                console.log('Authentication failed - no user returned');
                 throw new Error("Invalid credentials or account type");
             }
         } catch (error) {
-            console.error('Authentication error:', error);
             alert(error.message || "Login failed. Please check your credentials.");
             document.getElementById('password').value = '';
             document.getElementById('username').focus();
@@ -147,7 +117,6 @@
 
     // Check if already logged in on page load
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, checking login status');
         // Clear any existing session data (using correct key)
         if (sessionStorage.getItem('doraBankSession')) {
             sessionStorage.removeItem('doraBankSession');
