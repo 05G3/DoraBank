@@ -4,6 +4,7 @@ import com.dorabank.model.User;
 import com.dorabank.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class AdminController {
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable String userId) {
+    public ResponseEntity<User> getUserById(@PathVariable @NonNull String userId) {
         User user = adminService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
