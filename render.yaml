@@ -7,8 +7,8 @@ services:
     healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_DATA_MONGODB_URI
-        value: mongodb+srv://admin:YOUR_PASSWORD@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority
+        value: mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority
       - key: JWT_SECRET
-        value: your-super-secret-jwt-key-at-least-256-bits-long
+        value: dora-bank-super-secret-jwt-key-for-production-256-bits-minimum-length-secure
       - key: CORS_ALLOWED_ORIGINS
-        value: https://your-app-name.netlify.app
+        value: https://dora-bank-app.netlify.app
