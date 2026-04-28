@@ -148,7 +148,7 @@
     </main>
 
     <script>
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://dora-bank-api.onrender.com/api';
 
 function logout() {
     localStorage.removeItem('jwt_token');
@@ -633,7 +633,7 @@ async function loadUserInfo(token) {
 // WebSocket for real-time updates (optional)
 function connectWebSocket(accountNumber) {
     try {
-        const socket = new SockJS('http://localhost:8080/ws');
+        const socket = new SockJS('https://dora-bank-api.onrender.com/ws');
         const stompClient = Stomp.over(socket);
         
         // Set timeout for connection
