@@ -7,6 +7,7 @@ import com.dorabank.model.User;
 import com.dorabank.repository.CardRepository;
 import com.dorabank.util.CardGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class CardService {
         return cards;
     }
 
-    public Card getCardById(String cardId) {
+    public Card getCardById(@NonNull String cardId) {
         Card card = cardRepository.findById(cardId != null ? cardId : "")
                 .orElseThrow(() -> new CustomException("Card not found", 404));
         

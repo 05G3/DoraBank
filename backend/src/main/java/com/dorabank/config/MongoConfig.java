@@ -14,7 +14,7 @@ import org.springframework.lang.NonNull;
 @ConditionalOnProperty(name = "spring.data.mongodb.enabled", havingValue = "true", matchIfMissing = false)
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Value("${spring.data.mongodb.uri:mongodb://admin:admin123@ac-nykyhsq-shard-00-00.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-01.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-02.s6zxngd.mongodb.net:27017/dorabank?replicaSet=atlas-xyz123&ssl=true&authSource=admin}")
+    @Value("${spring.data.mongodb.uri:mongodb+srv://dorarakesh8_db_user:mFfplG05VnmB2fh0@cluster0.wn9ybwl.mongodb.net/dorabank?retryWrites=true&w=majority}")
     private String mongoUri;
 
     @Value("${spring.data.mongodb.database:dorabank}")
@@ -30,7 +30,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     @NonNull
     public MongoClient mongoClient() {
-        return MongoClients.create(mongoUri != null ? mongoUri : "mongodb://admin:admin123@ac-nykyhsq-shard-00-00.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-01.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-02.s6zxngd.mongodb.net:27017/dorabank?replicaSet=atlas-xyz123&ssl=true&authSource=admin");
+        return MongoClients.create((mongoUri != null ? mongoUri : "mongodb+srv://dorarakesh8_db_user:mFfplG05VnmB2fh0@cluster0.wn9ybwl.mongodb.net/dorabank?retryWrites=true&w=majority"));
     }
 
     @Bean

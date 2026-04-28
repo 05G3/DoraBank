@@ -7,7 +7,9 @@ services:
     healthCheckPath: /actuator/health
     envVars:
       - key: SPRING_DATA_MONGODB_ENABLED
-        value: false
+        value: true
+      - key: SPRING_DATA_MONGODB_URI
+        value: mongodb+srv://dorarakesh8_db_user:mFfplG05VnmB2fh0@cluster0.wn9ybwl.mongodb.net/dorabank?retryWrites=true&w=majority
       - key: JWT_SECRET
         value: dora-bank-super-secret-jwt-key-for-production-256-bits-minimum-length-secure
       - key: CORS_ALLOWED_ORIGINS

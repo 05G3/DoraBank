@@ -7,6 +7,7 @@ import com.dorabank.model.User;
 import com.dorabank.repository.TransactionRepository;
 import com.dorabank.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,8 +61,8 @@ public class TransactionService {
         
         // Send real-time notification
         String accountNumber = request.getAccountNumber() != null ? request.getAccountNumber() : "";
-        messagingTemplate.convertAndSend("/topic/transactions/" + accountNumber, transaction);
-        messagingTemplate.convertAndSend("/topic/balance/" + accountNumber, accountService.getAccountByNumber(accountNumber));
+        messagingTemplate.convertAndSend("/topic/transactions/" + accountNumber, (Object) transaction);
+        messagingTemplate.convertAndSend("/topic/balance/" + accountNumber, (Object) accountService.getAccountByNumber(accountNumber));
 
         return transaction;
     }
@@ -96,7 +97,7 @@ public class TransactionService {
 
         String safeToAccount = toAccount != null ? toAccount : "";
         messagingTemplate.convertAndSend("/topic/transactions/" + safeToAccount, receiverTransaction);
-        messagingTemplate.convertAndSend("/topic/balance/" + safeToAccount, accountService.getAccountByNumber(safeToAccount));
+        messagingTemplate.convertAndSend("/topic/balance/" + safeToAccount, (Object) accountService.getAccountByNumber(safeToAccount));
     }
 
     public List<Transaction> getAccountTransactions(String accountNumber) {
