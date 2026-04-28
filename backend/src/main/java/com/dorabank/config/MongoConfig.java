@@ -12,7 +12,7 @@ import org.springframework.lang.NonNull;
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Value("${spring.data.mongodb.uri:mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority}")
+    @Value("${spring.data.mongodb.uri:mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidHostnames=true}")
     private String mongoUri;
 
     @Value("${spring.data.mongodb.database:dorabank}")
@@ -28,7 +28,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     @NonNull
     public MongoClient mongoClient() {
-        return MongoClients.create(mongoUri != null ? mongoUri : "mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority");
+        return MongoClients.create(mongoUri != null ? mongoUri : "mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidHostnames=true");
     }
 
     @Bean
