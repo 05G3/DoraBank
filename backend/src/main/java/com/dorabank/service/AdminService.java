@@ -4,8 +4,6 @@ import com.dorabank.exception.CustomException;
 import com.dorabank.model.User;
 import com.dorabank.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,7 +25,7 @@ public class AdminService {
 
     public User getUserById(String userId) {
         verifyAdmin();
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(userId != null ? userId : "")
                 .orElseThrow(() -> new CustomException("User not found", 404));
         user.setPassword(null);
         return user;
@@ -35,7 +33,7 @@ public class AdminService {
 
     public User getUserByAccountNumber(String accountNumber) {
         verifyAdmin();
-        User user = userRepository.findByAccountNumber(accountNumber)
+        User user = userRepository.findByAccountNumber(accountNumber != null ? accountNumber : "")
                 .orElseThrow(() -> new CustomException("User not found", 404));
         user.setPassword(null);
         return user;
@@ -46,7 +44,7 @@ public class AdminService {
         if (!userRepository.existsById(userId)) {
             throw new CustomException("User not found", 404);
         }
-        userRepository.deleteById(userId);
+        userRepository.deleteById(userId != null ? userId : "");
     }
 
     public Double getTotalBankBalance() {

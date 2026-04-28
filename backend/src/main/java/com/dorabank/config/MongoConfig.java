@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.lang.NonNull;
 
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
@@ -18,14 +19,16 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     private String databaseName;
 
     @Override
+    @NonNull
     protected String getDatabaseName() {
-        return databaseName;
+        return databaseName != null ? databaseName : "dorabank";
     }
 
     @Bean
     @Override
+    @NonNull
     public MongoClient mongoClient() {
-        return MongoClients.create(mongoUri);
+        return MongoClients.create(mongoUri != null ? mongoUri : "mongodb://localhost:27017");
     }
 
     @Bean

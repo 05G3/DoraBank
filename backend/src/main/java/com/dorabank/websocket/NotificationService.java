@@ -13,14 +13,14 @@ public class NotificationService {
     private SimpMessagingTemplate messagingTemplate;
 
     public void sendTransactionUpdate(String accountNumber, Transaction transaction) {
-        messagingTemplate.convertAndSend("/topic/transactions/" + accountNumber, transaction);
+        messagingTemplate.convertAndSend("/topic/transactions/" + (accountNumber != null ? accountNumber : ""), transaction);
     }
 
     public void sendBalanceUpdate(String accountNumber, Account account) {
-        messagingTemplate.convertAndSend("/topic/balance/" + accountNumber, account);
+        messagingTemplate.convertAndSend("/topic/balance/" + (accountNumber != null ? accountNumber : ""), account);
     }
 
     public void sendNotification(String accountNumber, String message) {
-        messagingTemplate.convertAndSend("/topic/notifications/" + accountNumber, message);
+        messagingTemplate.convertAndSend("/topic/notifications/" + (accountNumber != null ? accountNumber : ""), message);
     }
 }

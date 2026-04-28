@@ -59,8 +59,9 @@ public class TransactionService {
         transaction = transactionRepository.save(transaction);
         
         // Send real-time notification
-        messagingTemplate.convertAndSend("/topic/transactions/" + request.getAccountNumber(), transaction);
-        messagingTemplate.convertAndSend("/topic/balance/" + request.getAccountNumber(), accountService.getAccountByNumber(request.getAccountNumber()));
+        String accountNumber = request.getAccountNumber() != null ? request.getAccountNumber() : "";
+        messagingTemplate.convertAndSend("/topic/transactions/" + accountNumber, transaction);
+        messagingTemplate.convertAndSend("/topic/balance/" + accountNumber, accountService.getAccountByNumber(accountNumber));
 
         return transaction;
     }
@@ -93,8 +94,9 @@ public class TransactionService {
         receiverTransaction.setFromAccount(fromAccount);
         transactionRepository.save(receiverTransaction);
 
-        messagingTemplate.convertAndSend("/topic/transactions/" + toAccount, receiverTransaction);
-        messagingTemplate.convertAndSend("/topic/balance/" + toAccount, accountService.getAccountByNumber(toAccount));
+        String safeToAccount = toAccount != null ? toAccount : "";
+        messagingTemplate.convertAndSend("/topic/transactions/" + safeToAccount, receiverTransaction);
+        messagingTemplate.convertAndSend("/topic/balance/" + safeToAccount, accountService.getAccountByNumber(safeToAccount));
     }
 
     public List<Transaction> getAccountTransactions(String accountNumber) {

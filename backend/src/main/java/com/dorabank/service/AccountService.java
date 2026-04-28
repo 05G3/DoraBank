@@ -4,7 +4,6 @@ import com.dorabank.exception.CustomException;
 import com.dorabank.model.Account;
 import com.dorabank.model.User;
 import com.dorabank.repository.AccountRepository;
-import com.dorabank.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,9 +17,6 @@ public class AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     public Account getAccountByNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)

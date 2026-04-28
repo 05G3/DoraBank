@@ -5,7 +5,6 @@ import com.dorabank.exception.CustomException;
 import com.dorabank.model.Card;
 import com.dorabank.model.User;
 import com.dorabank.repository.CardRepository;
-import com.dorabank.repository.UserRepository;
 import com.dorabank.util.CardGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -21,9 +20,6 @@ public class CardService {
 
     @Autowired
     private CardRepository cardRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private CardGenerator cardGenerator;
@@ -67,11 +63,11 @@ public class CardService {
     }
 
     public Card getCardById(String cardId) {
-        Card card = cardRepository.findById(cardId)
+        Card card = cardRepository.findById(cardId != null ? cardId : "")
                 .orElseThrow(() -> new CustomException("Card not found", 404));
         
         User user = getCurrentUser();
-        if (!card.getUserId().equals(user.getId())) {
+        if (!card.getUserId().equals(user.getId() != null ? user.getId() : "")) {
             throw new CustomException("Unauthorized access to card", 403);
         }
 
@@ -80,11 +76,11 @@ public class CardService {
     }
 
     public void blockCard(String cardId) {
-        Card card = cardRepository.findById(cardId)
+        Card card = cardRepository.findById(cardId != null ? cardId : "")
                 .orElseThrow(() -> new CustomException("Card not found", 404));
         
         User user = getCurrentUser();
-        if (!card.getUserId().equals(user.getId())) {
+        if (!card.getUserId().equals(user.getId() != null ? user.getId() : "")) {
             throw new CustomException("Unauthorized access to card", 403);
         }
 
