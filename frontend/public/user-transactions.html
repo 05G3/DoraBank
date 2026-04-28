@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Transactions - Dora Bank</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/auth.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="admin-dashboard.html">Dashboard</a></li>
+                    <li><a href="user-transactions.html" class="active">User Transactions</a></li>
+                    <li><a href="login.html" onclick="return logout();">Logout</a></li>
+                </ul>
+            </nav>
+            <div class="admin-profile">
+                <img src="assets/images/cfo.jpg" alt="Admin" class="admin-photo">
+                <span class="admin-name">Admin</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <div class="container">
+            <div class="page-header">
+                <a href="admin-dashboard.html" class="back-btn">← Back to Dashboard</a>
+                <h1>User Transactions</h1>
+            </div>
+
+            <div class="user-transactions-container">
+                <div class="user-info-header">
+                    <div class="user-photo-small">
+                        <img id="userPhoto" src="assets/images/default-avatar.png" alt="User Photo" 
+                             onerror="this.src='assets/images/default-avatar.png'">
+                    </div>
+                    <div class="user-info">
+                        <h2 id="userName">Loading...</h2>
+                        <p id="userAccount">Account: Loading...</p>
+                        <p id="userBalance">Balance: Loading...</p>
+                    </div>
+                </div>
+
+                <div class="transactions-section">
+                    <div class="section-header">
+                        <h3>Transaction History</h3>
+                        <div class="transaction-filters">
+                            <select id="typeFilter" onchange="filterTransactions()">
+                                <option value="">All Types</option>
+                                <option value="deposit">Deposits</option>
+                                <option value="withdrawal">Withdrawals</option>
+                            </select>
+                            <input type="date" id="dateFilter" onchange="filterTransactions()">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="transactionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Balance After</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filled by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="transaction-summary">
+                        <div class="summary-card">
+                            <h4>Total Deposits</h4>
+                            <p id="totalDeposits">₹0.00</p>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Total Withdrawals</h4>
+                            <p id="totalWithdrawals">₹0.00</p>
+                        </div>
+                        <div class="summary-card">
+                            <h4>Net Amount</h4>
+                            <p id="netAmount">₹0.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+        let allTransactions = [];
+
+        function loadUserTransactions() {
+            // Check admin authentication
+            const admin = checkAuth(true);
+            if (!admin || admin.accountType !== 'admin') {
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Get account number from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const accountNumber = urlParams.get('account');
+            
+            if (!accountNumber) {
+                alert('No account number provided');
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            // Load user data
+            currentUser = BankDB.getUserByAccount(accountNumber);
+            if (!currentUser) {
+                alert('User not found');
+                window.location.href = 'admin-dashboard.html';
+                return;
+            }
+
+            displayUserInfo();
+            loadTransactions();
+        }
+
+        function displayUserInfo() {
+            document.getElementById('userName').textContent = currentUser.fullName;
+            document.getElementById('userAccount').textContent = `Account: ${currentUser.accountNumber}`;
+            document.getElementById('userBalance').textContent = `Balance: ₹${parseFloat(currentUser.balance).toFixed(2)}`;
+
+            if (currentUser.photo) {
+                document.getElementById('userPhoto').src = currentUser.photo;
+            }
+        }
+
+        function loadTransactions() {
+            allTransactions = BankDB.getTransactionsByAccount(currentUser.accountNumber);
+            allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            displayTransactions(allTransactions);
+            calculateSummary(allTransactions);
+        }
+
+        function displayTransactions(transactions) {
+            const tableBody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            if (transactions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No transactions found</td></tr>';
+                return;
+            }
+
+            let runningBalance = 0;
+            transactions.forEach(trans => {
+                if (trans.type === 'deposit') {
+                    runningBalance += trans.amount;
+                } else {
+                    runningBalance -= trans.amount;
+                }
+
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(trans.date)}</td>
+                    <td class="${trans.type}">${trans.type.charAt(0).toUpperCase() + trans.type.slice(1)}</td>
+                    <td>₹${trans.amount.toFixed(2)}</td>
+                    <td>${trans.description || 'N/A'}</td>
+                    <td>₹${runningBalance.toFixed(2)}</td>
+                `;
+            });
+        }
+
+        function calculateSummary(transactions) {
+            const deposits = transactions.filter(t => t.type === 'deposit');
+            const withdrawals = transactions.filter(t => t.type === 'withdrawal');
+            
+            const totalDeposits = deposits.reduce((sum, t) => sum + t.amount, 0);
+            const totalWithdrawals = withdrawals.reduce((sum, t) => sum + t.amount, 0);
+            const netAmount = totalDeposits - totalWithdrawals;
+
+            document.getElementById('totalDeposits').textContent = `₹${totalDeposits.toFixed(2)}`;
+            document.getElementById('totalWithdrawals').textContent = `₹${totalWithdrawals.toFixed(2)}`;
+            document.getElementById('netAmount').textContent = `₹${netAmount.toFixed(2)}`;
+        }
+
+        function filterTransactions() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            let filteredTransactions = allTransactions;
+
+            if (typeFilter) {
+                filteredTransactions = filteredTransactions.filter(t => t.type === typeFilter);
+            }
+
+            if (dateFilter) {
+                filteredTransactions = filteredTransactions.filter(t => t.date === dateFilter);
+            }
+
+            displayTransactions(filteredTransactions);
+            calculateSummary(filteredTransactions);
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                Auth.logout();
+            }
+            return false;
+        }
+
+        // Load transactions when page loads
+        document.addEventListener('DOMContentLoaded', loadUserTransactions);
+    </script>
+</body>
+</html> 

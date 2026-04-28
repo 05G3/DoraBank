@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Dora Bank</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- SockJS and STOMP for WebSocket -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-logo"></div>
+            <nav>
+                <ul>
+                    <li><a href="user-dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="request-card.html">Cards</a></li>
+                    <li><a href="#" onclick="logout()">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="container">
+            <h1>Welcome, <span id="userName"></span></h1>
+            
+            <div class="dashboard-grid">
+                <!-- Account Summary -->
+                <div class="dashboard-card summary">
+                    <h2>Account Summary</h2>
+                    <div class="account-info">
+                        <p><strong>Account Number:</strong> <span id="accountNumber"></span></p>
+                        <p><strong>Account Type:</strong> <span id="accountType"></span></p>
+                        <p><strong>Balance:</strong> ₹<span id="accountBalance"></span></p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card actions">
+                    <h2>Quick Actions</h2>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" onclick="showTransferForm()">Transfer Money</button>
+                        <button class="btn btn-secondary" onclick="showBillPaymentForm()">Pay Bills</button>
+                        <a href="request-card.html" class="btn btn-primary">Request Card</a>
+                    </div>
+                </div>
+
+                <!-- My Cards -->
+                <div class="dashboard-card cards">
+                    <h2>My Cards</h2>
+                    <div class="cards-grid" id="userCardsGrid">
+                        <!-- Cards will be displayed here using the new template -->
+                    </div>
+                    <p id="noCardsMessage" style="text-align:center; display:none;">No cards yet. <a href="request-card.html">Request a card</a></p>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="dashboard-card transactions">
+                    <h2>Recent Transactions</h2>
+                    <div class="transaction-actions">
+                        <button class="btn btn-small" onclick="showTransactionForm('deposit')">Deposit</button>
+                        <button class="btn btn-small" onclick="showTransactionForm('withdrawal')">Withdraw</button>
+                    </div>
+                    
+                    <!-- Transfer Form -->
+                    <div id="transferForm" style="display: none;">
+                        <h3>Transfer Money</h3>
+                        <form id="transferFormContent">
+                            <div class="form-group">
+                                <label for="toAccountNumber">To Account Number</label>
+                                <input type="text" id="toAccountNumber" required placeholder="DORA-SAV-XXXX">
+                            </div>
+                            <div class="form-group">
+                                <label for="transferAmount">Amount (₹)</label>
+                                <input type="number" id="transferAmount" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transferDesc">Description</label>
+                                <input type="text" id="transferDesc" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Transfer</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideTransferForm()">Cancel</button>
+                        </form>
+                    </div>
+
+                    <!-- Bill Payment Form -->
+                    <div id="billPaymentForm" style="display: none;">
+                        <h3>Pay Bills</h3>
+                        <form id="billPaymentFormContent">
+                            <div class="form-group">
+                                <label for="billType">Bill Type</label>
+                                <select id="billType" required>
+                                    <option value="electricity">Electricity</option>
+                                    <option value="water">Water</option>
+                                    <option value="gas">Gas</option>
+                                    <option value="internet">Internet</option>
+                                    <option value="mobile">Mobile</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="billAmount">Amount (₹)</label>
+                                <input type="number" id="billAmount" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="billNumber">Bill Number/Reference</label>
+                                <input type="text" id="billNumber" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Pay Bill</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideBillPaymentForm()">Cancel</button>
+                        </form>
+                    </div>
+                    
+                    <div id="transactionForm" style="display: none;">
+                        <form id="transactionFormContent">
+                            <input type="hidden" id="transactionType">
+                            <div class="form-group">
+                                <label for="transactionAmount">Amount (₹)</label>
+                                <input type="number" id="transactionAmount" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transactionDesc">Description</label>
+                                <input type="text" id="transactionDesc" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideTransactionForm()">Cancel</button>
+                        </form>
+                    </div>
+                    
+                    <table id="transactionHistory">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+const API_BASE_URL = 'http://localhost:8080/api';
+
+function logout() {
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user_info');
+    window.location.href = 'login.html';
+}
+
+// Global flag to prevent multiple card loads
+let isCardsLoading = false;
+let cardsRendered = false; // 🔥 BONUS: Prevent duplicate rendering
+
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('jwt_token');
+    const userInfo = localStorage.getItem('user_info');
+    
+    if (!token || !userInfo) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    const user = JSON.parse(userInfo);
+    
+    // Display user information
+    document.getElementById('userName').textContent = user.fullName || user.email;
+    document.getElementById('accountNumber').textContent = user.accountNumber || 'N/A';
+    document.getElementById('accountType').textContent = user.accountType ? user.accountType.charAt(0).toUpperCase() + user.accountType.slice(1) : 'N/A';
+    document.getElementById('accountBalance').textContent = user.balance !== undefined ? user.balance : 0;
+    
+    // Remove transaction form buttons since we have separate transactions page
+    const transactionActions = document.querySelector('.transaction-actions');
+    if (transactionActions) {
+        transactionActions.style.display = 'none';
+    }
+    
+    const transactionForm = document.getElementById('transactionForm');
+    if (transactionForm) {
+        transactionForm.style.display = 'none';
+    }
+    
+    // Load transactions
+    loadTransactions(token);
+    
+    // 🔥 FIX 2: Load user cards only once with proper flag checking
+    if (!isCardsLoading && !cardsRendered) {
+        isCardsLoading = true;
+        loadUserCards(token, user);
+    }
+    
+    // Connect to WebSocket for real-time updates (optional)
+    if (user.accountNumber) {
+        try {
+            connectWebSocket(user.accountNumber);
+        } catch (error) {
+            console.warn('WebSocket connection failed, continuing without real-time updates:', error);
+        }
+    }
+});
+
+async function loadTransactions(token) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/transactions/current`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const transactions = await response.json();
+            const tbody = document.querySelector('#transactionHistory tbody');
+            tbody.innerHTML = '';
+            
+            if (Array.isArray(transactions) && transactions.length > 0) {
+                transactions.slice(0, 5).forEach(tx => {
+                    const row = tbody.insertRow();
+                    const date = tx.timestamp ? new Date(tx.timestamp).toLocaleDateString() : 'N/A';
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${tx.description || 'N/A'}</td>
+                        <td>₹${tx.amount}</td>
+                        <td>${tx.type}</td>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">No transactions found</td></tr>';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+    }
+}
+
+async function loadUserCards(token, user) {
+    try {
+        console.log('Loading user cards...');
+        const response = await fetch(`${API_BASE_URL}/cards/current`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('Cards response status:', response.status);
+        
+        if (response.ok) {
+            const cards = await response.json();
+            console.log('Cards data:', cards);
+            
+            const cardsGrid = document.getElementById('userCardsGrid');
+            const noCardsMessage = document.getElementById('noCardsMessage');
+            
+            console.log('Cards grid element:', cardsGrid);
+            console.log('No cards message element:', noCardsMessage);
+            
+            // 🔥 FIX 1: Clear container completely before rendering
+            cardsGrid.innerHTML = '';
+            
+            if (Array.isArray(cards) && cards.length > 0) {
+                console.log('Found cards:', cards.length);
+                noCardsMessage.style.display = 'none';
+                
+                // 🔥 FIX 2: Build all cards HTML first, then set once
+                let allCardsHTML = '';
+                
+                cards.forEach((card, index) => {
+                    const cardId = `user-card-${index}`;
+                    const maskedNumber = card.cardNumber.replace(/\d(?=\d{4})/g, '*');
+                    
+                    const cardHTML = `
+                        <div class="card-container">
+                            <div class="card-item ${card.cardType}">
+                                <div class="card-chip"></div>
+                                <div class="card-logo">DORA BANK</div>
+                                <div class="card-number" id="${cardId}-number">${maskedNumber}</div>
+                                <div class="card-holder">${user.fullName}</div>
+                                <div class="card-details">
+                                    <div>
+                                        <span>Expiry</span>
+                                        <p>${card.expiryDate}</p>
+                                    </div>
+                                    <div class="card-type">${card.cardType.toUpperCase()}</div>
+                                </div>
+                                <div class="card-back">
+                                    <div class="card-magnetic-strip"></div>
+                                    <div class="card-signature"></div>
+                                    <div class="card-cvv"><span>CVV:</span> ${card.cvv}</div>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-small toggle-btn" 
+                                    data-card-id="${cardId}" 
+                                    data-full-number="${card.cardNumber}">
+                                    Show Full Number
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    allCardsHTML += cardHTML;
+                    console.log('Added card HTML for card:', cardId);
+                });
+                
+                // 🔥 FIX 3: Set all cards HTML at once (no appending)
+                cardsGrid.innerHTML = allCardsHTML;
+                console.log('Final cards grid HTML length:', cardsGrid.innerHTML.length);
+                console.log('Number of card elements:', cardsGrid.children.length);
+                
+                // 🔥 BONUS: Set rendered flag to prevent duplicate rendering
+                cardsRendered = true;
+                
+                // 🔥 FIX 4: Add event listeners only once after DOM is ready
+                setTimeout(() => {
+                    // Add hover effect for card flip
+                    document.querySelectorAll('.card').forEach(card => {
+                        card.addEventListener('mouseenter', function() {
+                            this.style.transform = 'rotateY(180deg)';
+                        });
+                        card.addEventListener('mouseleave', function() {
+                            this.style.transform = 'rotateY(0deg)';
+                        });
+                    });
+                    
+                    // Add event listeners to toggle buttons
+                    document.querySelectorAll('.toggle-btn').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            const cardId = this.getAttribute('data-card-id');
+                            const fullNumber = this.getAttribute('data-full-number');
+                            const numberElement = document.getElementById(`${cardId}-number`);
+                            
+                            if (!numberElement) {
+                                console.error('Number element not found:', cardId);
+                                return;
+                            }
+                            
+                            const isMasked = numberElement.textContent.includes('****');
+                            
+                            if (isMasked) {
+                                numberElement.textContent = formatCardNumber(fullNumber);
+                                this.textContent = 'Hide Full Number';
+                                console.log('Showing full number for:', cardId);
+                            } else {
+                                numberElement.textContent = fullNumber.replace(/\d(?=\d{4})/g, '*');
+                                this.textContent = 'Show Full Number';
+                                console.log('Masking number for:', cardId);
+                            }
+                        });
+                    });
+                }, 100);
+                
+            } else {
+                console.log('No cards found or invalid response');
+                cardsGrid.innerHTML = '';
+                noCardsMessage.style.display = 'block';
+                
+                // Add a test card to verify styling works
+                const testCardHTML = `
+                    <div class="card-container">
+                        <div class="card-item debit">
+                            <div class="card-chip"></div>
+                            <div class="card-logo">DORA BANK</div>
+                            <div class="card-number">**** **** **** 4204</div>
+                            <div class="card-holder">${user.fullName || 'TEST USER'}</div>
+                            <div class="card-details">
+                                <div>
+                                    <span>Expiry</span>
+                                    <p>04/29</p>
+                                </div>
+                                <div class="card-type">DEBIT</div>
+                            </div>
+                            <div class="card-back">
+                                <div class="card-magnetic-strip"></div>
+                                <div class="card-signature"></div>
+                                <div class="card-cvv"><span>CVV:</span> 123</div>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-small toggle-btn">Show Full Number</button>
+                        </div>
+                    </div>
+                `;
+                cardsGrid.innerHTML = testCardHTML;
+                console.log('Added test card for display verification');
+            }
+        } else {
+            console.log('Failed to load cards:', response.status);
+            cardsGrid.innerHTML = '';
+            noCardsMessage.style.display = 'block';
+            
+            // Add a test card even on API failure
+            const testCardHTML = `
+                <div class="card-container">
+                    <div class="card-item credit">
+                        <div class="card-chip"></div>
+                        <div class="card-logo">DORA BANK</div>
+                        <div class="card-number">**** **** **** 1234</div>
+                        <div class="card-holder">${user.fullName || 'TEST USER'}</div>
+                        <div class="card-details">
+                            <div>
+                                <span>Expiry</span>
+                                <p>12/30</p>
+                            </div>
+                            <div class="card-type">CREDIT</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="card-magnetic-strip"></div>
+                            <div class="card-signature"></div>
+                            <div class="card-cvv"><span>CVV:</span> 456</div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-small toggle-btn">Show Full Number</button>
+                    </div>
+                </div>
+            `;
+            cardsGrid.innerHTML = testCardHTML;
+            console.log('Added test card due to API failure');
+        }
+    } catch (error) {
+        console.error('Error loading user cards:', error);
+    } finally {
+        // Reset the loading flag
+        isCardsLoading = false;
+    }
+}
+
+window.toggleCardNumber = function(cardId, fullNumber) {
+    const numberElement = document.getElementById(`${cardId}-number`);
+    const button = event.target;
+    
+    if (!numberElement || !button) {
+        console.error('Number element or button not found');
+        return;
+    }
+    
+    const isMasked = numberElement.textContent.includes('****');
+    
+    if (isMasked) {
+        numberElement.textContent = formatCardNumber(fullNumber);
+        button.textContent = 'Hide Full Number';
+        console.log('Showing full number');
+    } else {
+        numberElement.textContent = fullNumber.replace(/\d(?=\d{4})/g, '*');
+        button.textContent = 'Show Full Number';
+        console.log('Masking number');
+    }
+}
+
+function formatCardNumber(number) {
+    return number.replace(/(.{4})/g, '$1 ').trim();
+}
+
+// Transfer Money Functions
+window.showTransferForm = function() {
+    document.getElementById('transferForm').style.display = 'block';
+    document.getElementById('billPaymentForm').style.display = 'none';
+    document.getElementById('transactionForm').style.display = 'none';
+}
+
+window.hideTransferForm = function() {
+    document.getElementById('transferForm').style.display = 'none';
+}
+
+document.getElementById('transferFormContent').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const toAccountNumber = document.getElementById('toAccountNumber').value.trim();
+    const amount = parseFloat(document.getElementById('transferAmount').value);
+    const description = document.getElementById('transferDesc').value;
+    
+    const token = localStorage.getItem('jwt_token');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/transactions/process`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'transfer',
+                amount: amount,
+                description: description,
+                toAccountNumber: toAccountNumber
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Transfer successful!');
+            hideTransferForm();
+            loadUserInfo(token);
+            loadTransactions(token);
+        } else {
+            alert('Transfer failed: ' + (data.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error processing transfer:', error);
+        alert('Transfer failed. Please try again.');
+    }
+});
+
+// Bill Payment Functions
+window.showBillPaymentForm = function() {
+    document.getElementById('billPaymentForm').style.display = 'block';
+    document.getElementById('transferForm').style.display = 'none';
+    document.getElementById('transactionForm').style.display = 'none';
+}
+
+window.hideBillPaymentForm = function() {
+    document.getElementById('billPaymentForm').style.display = 'none';
+}
+
+document.getElementById('billPaymentFormContent').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const billType = document.getElementById('billType').value;
+    const amount = parseFloat(document.getElementById('billAmount').value);
+    const billNumber = document.getElementById('billNumber').value;
+    
+    const token = localStorage.getItem('jwt_token');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/transactions/process`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: 'bill_payment',
+                amount: amount,
+                description: `${billType} bill - ${billNumber}`
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('Bill payment successful!');
+            hideBillPaymentForm();
+            loadUserInfo(token);
+            loadTransactions(token);
+        } else {
+            alert('Bill payment failed: ' + (data.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error processing bill payment:', error);
+        alert('Bill payment failed. Please try again.');
+    }
+});
+
+// Deposit/Withdraw Functions
+window.showTransactionForm = function(type) {
+    document.getElementById('transactionType').value = type;
+    document.getElementById('transactionForm').style.display = 'block';
+    document.getElementById('transferForm').style.display = 'none';
+    document.getElementById('billPaymentForm').style.display = 'none';
+}
+
+window.hideTransactionForm = function() {
+    document.getElementById('transactionForm').style.display = 'none';
+}
+
+document.getElementById('transactionFormContent').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const type = document.getElementById('transactionType').value;
+    const amount = parseFloat(document.getElementById('transactionAmount').value);
+    const description = document.getElementById('transactionDesc').value;
+    
+    const token = localStorage.getItem('jwt_token');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/transactions/process`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: type,
+                amount: amount,
+                description: description
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} successful!`);
+            hideTransactionForm();
+            loadUserInfo(token);
+            loadTransactions(token);
+        } else {
+            alert(`${type} failed: ` + (data.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error processing transaction:', error);
+        alert(`${type} failed. Please try again.`);
+    }
+});
+
+async function loadUserInfo(token) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/accounts/current`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const account = await response.json();
+            document.getElementById('accountBalance').textContent = account.balance || 0;
+        }
+    } catch (error) {
+        console.error('Error loading user info:', error);
+    }
+}
+
+// WebSocket for real-time updates (optional)
+function connectWebSocket(accountNumber) {
+    try {
+        const socket = new SockJS('http://localhost:8080/ws');
+        const stompClient = Stomp.over(socket);
+        
+        // Set timeout for connection
+        const connectionTimeout = setTimeout(() => {
+            console.warn('WebSocket connection timeout - continuing without real-time updates');
+            socket.close();
+        }, 5000);
+        
+        stompClient.connect({}, function(frame) {
+            clearTimeout(connectionTimeout);
+            console.log('Connected to WebSocket');
+            
+            // Subscribe to balance updates
+            stompClient.subscribe(`/topic/balance/${accountNumber}`, function(message) {
+                const balanceUpdate = JSON.parse(message.body);
+                document.getElementById('accountBalance').textContent = balanceUpdate.balance;
+            });
+            
+            // Subscribe to transaction updates
+            stompClient.subscribe(`/topic/transactions/${accountNumber}`, function(message) {
+                loadTransactions(localStorage.getItem('jwt_token'));
+            });
+        }, function(error) {
+            clearTimeout(connectionTimeout);
+            console.warn('WebSocket connection failed - continuing without real-time updates:', error);
+        });
+    } catch (error) {
+        console.warn('WebSocket initialization failed - continuing without real-time updates:', error);
+    }
+}
+</script>
+</body>
+</html>
