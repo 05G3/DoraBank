@@ -12,7 +12,7 @@ import org.springframework.lang.NonNull;
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
 
-    @Value("${spring.data.mongodb.uri:mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidHostnames=true}")
+    @Value("${spring.data.mongodb.uri:mongodb://admin:admin123@ac-nykyhsq-shard-00-00.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-01.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-02.s6zxngd.mongodb.net:27017/dorabank?replicaSet=atlas-xyz123&ssl=true&authSource=admin}")
     private String mongoUri;
 
     @Value("${spring.data.mongodb.database:dorabank}")
@@ -28,7 +28,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     @NonNull
     public MongoClient mongoClient() {
-        return MongoClients.create(mongoUri != null ? mongoUri : "mongodb+srv://admin:admin123@cluster0.s6zxngd.mongodb.net/dorabank?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidHostnames=true");
+        return MongoClients.create(mongoUri != null ? mongoUri : "mongodb://admin:admin123@ac-nykyhsq-shard-00-00.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-01.s6zxngd.mongodb.net:27017,ac-nykyhsq-shard-00-02.s6zxngd.mongodb.net:27017/dorabank?replicaSet=atlas-xyz123&ssl=true&authSource=admin");
     }
 
     @Bean
