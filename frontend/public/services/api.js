@@ -1,6 +1,8 @@
+const API_BASE_URL = 'https://dora-bank-api.onrender.com/api';
+
 class ApiService {
     constructor() {
-        this.baseUrl = API_CONFIG.BASE_URL;
+        this.baseUrl = API_BASE_URL;
         this.wsUrl = API_CONFIG.WS_URL;
     }
 
